@@ -2,6 +2,16 @@
 
 An enterprise-grade, multi-user AI Study Assistant built locally on Python & Streamlit. This application has drastically evolved from a minimal local PDF reader into a fully-fledged, cloud-native SaaS application utilizing **Google's Gemini 2.5 Flash**, **RAG (Retrieval-Augmented Generation)**, **Search Grounding**, and **Supabase**.
 
+## 📸 Interface Preview
+
+*(Showcasing the authentication flow, document pipeline, and dynamic generation options)*
+
+![Login Page](assets/login_page.png)
+![File Upload Interface](assets/file_upload.png)
+![Customization Options](assets/options.png)
+
+---
+
 ## ✨ Core Features
 
 1. **Intelligent PDF Processing & Notes Generation**: 
@@ -37,7 +47,7 @@ Ensure you have Python 3.10+ installed.
 
 1. **Clone & Virtual Environment:**
 ```bash
-git clone https://github.com/your-username/ai-study-notes-agent.git
+git clone [https://github.com/your-username/ai-study-notes-agent.git](https://github.com/your-username/ai-study-notes-agent.git)
 cd ai-study-notes-agent
 python -m venv venv
 source venv/bin/activate
