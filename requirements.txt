@@ -1,0 +1,7 @@
+streamlit
+pypdf
+google-genai
+python-dotenv
+fpdf2
+markdown
+supabase

@@ -1,0 +1,18 @@
+# Virtual Environment
+venv/
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Vector Database Storage
+chroma_db/
+
+# Local Runtime Data
+history.json
+
+# Environment Variables & Secrets
+.env
+.env.*
+*.secret
