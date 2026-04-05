@@ -139,10 +139,11 @@ ALTER TABLE sessions DISABLE ROW LEVEL SECURITY;
 
 5. **Launch Application:**
 ```bash
+source venv/bin/activate  # (Use .\venv\Scripts\activate on Windows)
 streamlit run app.py
 ```
 
-## 🔐 Technologies Used
+## 💻 Tech Stack
 - Frontend Framework: `Streamlit`
 - AI/LLM Provider: `google-genai` (Gemini 2.5 Flash + Search Grounding tools)
 - Database: `Supabase` / `PostgreSQL`
