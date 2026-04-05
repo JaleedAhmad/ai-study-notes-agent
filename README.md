@@ -41,6 +41,23 @@ An enterprise-grade, multi-user AI Study Assistant built locally on Python & Str
 7. **OAuth 2.0 Integration**:
    - Log in effortlessly using native deep-links via **"Continue with Google"** and **"Continue with Github"**.
 
+## 📁 Project Structure
+
+```text
+.
+├── app.py              # Main Entry Point (Streamlit)
+├── src/
+│   ├── core/           # Agent Logic, RAG, Prompts
+│   ├── database/       # Supabase Client & Operations
+│   ├── auth/           # OAuth 2.0 (Google/GitHub)
+│   ├── ui/             # Modular Streamlit UI Components
+│   ├── exporters/      # PDF, Anki, & Audio Generation
+│   └── utils/          # PDF Reader & Utility Helpers
+├── tests/              # Test Scripts & Debug Utilities
+├── requirements.txt    # Python Dependencies
+└── .env                # Secret Keys (Not for GitHub!)
+```
+
 ## 🛠️ Installation & Setup
 
 Ensure you have Python 3.10+ installed.

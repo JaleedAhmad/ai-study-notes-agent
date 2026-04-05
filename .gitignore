@@ -11,8 +11,16 @@ chroma_db/
 
 # Local Runtime Data
 history.json
+*.db
+*.apkg
 
 # Environment Variables & Secrets
 .env
 .env.*
 *.secret
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo

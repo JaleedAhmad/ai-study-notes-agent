@@ -5,3 +5,9 @@ python-dotenv
 fpdf2
 markdown
 supabase
+bcrypt
+genanki
+gTTS
+langchain-text-splitters
+chromadb
+requests

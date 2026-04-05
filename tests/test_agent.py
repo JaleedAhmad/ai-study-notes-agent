@@ -1,4 +1,7 @@
-from agent import generate_study_notes
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from src.core.agent import generate_study_notes
 
 try:
     print("Testing API call...")

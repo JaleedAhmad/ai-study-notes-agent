@@ -1,6 +1,6 @@
 from google import genai
 from google.genai import types
-from prompts import STUDY_AGENT_PROMPT
+from .prompts import STUDY_AGENT_PROMPT
 import os
 from dotenv import load_dotenv
 
