@@ -58,6 +58,25 @@ An enterprise-grade, multi-user AI Study Assistant built locally on Python & Str
 └── .env                # Secret Keys (Not for GitHub!)
 ```
 
+## 🏗️ System Architecture
+
+```mermaid
+graph TD
+    User((User)) -->|Input Documents/Questions| Frontend[Streamlit Frontend]
+    Frontend -->|Context & History| DB[(Supabase PostgreSQL)]
+    Frontend -->|Text Chunks| VectorDB[(ChromaDB Vector Store)]
+    
+    subgraph AI & Processing
+        Frontend -->|API Request| Gemini[Google Gemini 2.5 Flash]
+        Gemini -->|Search Grounding| Web[Google Search]
+        Frontend -->|TTS Engine| gTTS[Google Text-To-Speech]
+        Frontend -->|Deck Compilation| GenAnki[GenAnki Library]
+    end
+
+    Frontend -->|Downloadable Content| User
+    Frontend -->|Audio Stream| User
+```
+
 ## 🛠️ Installation & Setup
 
 Ensure you have Python 3.10+ installed.
@@ -130,3 +149,7 @@ streamlit run app.py
 - Vector DB (RAG): `ChromaDB`, `LangChain Text Splitters`
 - External Integrations: `gTTS` (Audio Podcasts), `GenAnki` (Spaced Repetition Flashcards), `bcrypt` (Security), `python-dotenv` (Environments)
 - Note Processing: `PyPDF2`, `Markdown`, `FPDF`
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
