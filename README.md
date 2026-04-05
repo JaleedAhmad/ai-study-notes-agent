@@ -4,7 +4,7 @@ An enterprise-grade, multi-user AI Study Assistant built locally on Python & Str
 
 ## 📸 Interface Preview
 
-*(Showcasing the authentication flow, document pipeline, and dynamic generation options)*
+*Showcasing the authentication flow, document pipeline, and dynamic generation options*
 
 ![Login Page](assets/login_page.png)  
 *Secure authentication supporting Email/Password and OAuth 2.0 (Google/GitHub).*  
