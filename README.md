@@ -6,9 +6,14 @@ An enterprise-grade, multi-user AI Study Assistant built locally on Python & Str
 
 *(Showcasing the authentication flow, document pipeline, and dynamic generation options)*
 
-![Login Page](assets/login_page.png)
-![File Upload Interface](assets/file_upload.png)
-![Customization Options](assets/options.png)
+![Login Page](assets/login_page.png)  
+*Secure authentication supporting Email/Password and OAuth 2.0 (Google/GitHub).*  
+
+![File Upload Interface](assets/file_upload.png)  
+*Seamlessly upload and index multi-document libraries for intelligent RAG-driven analysis.*  
+
+![Customization Options](assets/options.png)  
+*Tailor your study notes with adjustable tone, focus areas, and detail levels.*  
 
 ---
 
