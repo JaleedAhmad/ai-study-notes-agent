@@ -1,10 +1,15 @@
 streamlit
-pypdf
+supabase
+groq
+google-generativeai
 google-genai
+huggingface_hub
+PyMuPDF
+postgrest
+uvloop
 python-dotenv
 fpdf2
 markdown
-supabase
 bcrypt
 genanki
 gTTS
