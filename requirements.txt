@@ -1,0 +1,16 @@
+streamlit
+pypdf
+google-genai
+python-dotenv
+fpdf2
+markdown
+supabase
+bcrypt
+genanki
+gTTS
+langchain-text-splitters
+chromadb
+requests
+python-docx
+python-pptx
+openai
