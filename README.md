@@ -1,3 +1,12 @@
+---
+title: AI Study Notes Agent
+emoji: 📚
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+pinned: false
+---
+
 # AI Study Notes Agent 📚
 ### Enterprise-Grade Multi-User AI Study Assistant
 
