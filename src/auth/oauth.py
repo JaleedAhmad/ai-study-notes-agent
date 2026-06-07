@@ -9,7 +9,7 @@ GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
 GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
 
 # Streamlit runs locally on port 8501 by default
-REDIRECT_URI = "http://localhost:8501/"
+REDIRECT_URI = "https://jaleed02-ai-notes-agent.hf.space/"
 
 
 
