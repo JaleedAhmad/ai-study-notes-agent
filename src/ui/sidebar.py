@@ -30,7 +30,12 @@ def render_sidebar():
     
         st.divider()
         
-        sessions = database.get_all_sessions(st.session_state.user_id)
+        try:
+            sessions = database.get_all_sessions(st.session_state.user_id)
+        except Exception as e:
+            sessions = []
+            st.error("Could not load chat history. Database connection failed.")
+            
         for session in sessions:
             try:
                 date_str = datetime.fromisoformat(session["timestamp"]).strftime("%b %d, %H:%M")
@@ -54,17 +59,20 @@ def render_sidebar():
             
             with col2:
                 if st.button("🗑️", key=f"del_{session['id']}"):
-                    database.delete_session(session["id"])
-                    if st.session_state.current_session_id == session["id"]:
-                        st.session_state.current_session_id = None
-                        st.session_state.notes = None
-                        st.session_state.pdf_text = None
-                        st.session_state.chat_session = None
-                        st.session_state.chat_history = []
-                        st.session_state.current_file = None
-                        st.session_state.podcast_bytes = None
-                        st.session_state.anki_bytes = None
-                    st.rerun()
+                    try:
+                        database.delete_session(session["id"])
+                        if st.session_state.current_session_id == session["id"]:
+                            st.session_state.current_session_id = None
+                            st.session_state.notes = None
+                            st.session_state.pdf_text = None
+                            st.session_state.chat_session = None
+                            st.session_state.chat_history = []
+                            st.session_state.current_file = None
+                            st.session_state.podcast_bytes = None
+                            st.session_state.anki_bytes = None
+                        st.rerun()
+                    except Exception as e:
+                        st.error("Failed to delete session from the database.")
     
         st.divider()
         st.title("🛠️ Customization")

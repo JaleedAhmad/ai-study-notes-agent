@@ -15,11 +15,18 @@ def handle_oauth_callback():
             email = None
             
         if email:
-            success, uid = database.authenticate_oauth_user(email, state)
-            if success:
-                st.session_state.user_id = uid
+            try:
+                success, uid = database.authenticate_oauth_user(email, state)
+                if success:
+                    st.session_state.user_id = uid
+                    st.query_params.clear()
+                    st.rerun()
+                else:
+                    st.error("Failed to authenticate with provider.")
+                    st.query_params.clear()
+            except Exception as e:
+                st.error("Database connection failed. Please try again.")
                 st.query_params.clear()
-                st.rerun()
         else:
             st.error(f"Failed to authenticate with {state.capitalize()}")
             st.query_params.clear()
@@ -38,12 +45,15 @@ def render_login_signup_form():
             email = st.text_input("Email/Username")
             password = st.text_input("Password", type="password")
             if st.form_submit_button("Login"):
-                success, result = database.authenticate_user(email, password)
-                if success:
-                    st.session_state.user_id = result
-                    st.rerun()
-                else:
-                    st.error(result)
+                try:
+                    success, result = database.authenticate_user(email, password)
+                    if success:
+                        st.session_state.user_id = result
+                        st.rerun()
+                    else:
+                        st.error(result)
+                except Exception as e:
+                    st.error("Could not reach the database. Please try again.")
                     
     with tab2:
         with st.form("signup_form"):
@@ -53,8 +63,11 @@ def render_login_signup_form():
                 if len(new_email) < 3 or len(new_password) < 6:
                     st.error("Email must be at least 3 characters and password at least 6 characters.")
                 else:
-                    success, result = database.create_user(new_email, new_password)
-                    if success:
-                        st.success("Account created successfully! Please switch to the Login tab.")
-                    else:
-                        st.error(result)
+                    try:
+                        success, result = database.create_user(new_email, new_password)
+                        if success:
+                            st.success("Account created successfully! Please switch to the Login tab.")
+                        else:
+                            st.error(result)
+                    except Exception as e:
+                        st.error("Could not reach the database. Please try again.")
