@@ -15,7 +15,7 @@ from ..core import rag
 def render_main_content(use_web_search, tone, focus, length):
     st.title("AI Study Notes Agent")
 
-    uploaded_files = st.file_uploader("Upload your study material", type=["pdf", "docx", "pptx", "txt", "md"], accept_multiple_files=True)
+    uploaded_files = st.file_uploader("Upload your study material", type=["pdf", "docx", "pptx", "txt", "md", "png", "jpg", "jpeg"], accept_multiple_files=True)
 
     if uploaded_files:
         current_filenames = [f.name for f in uploaded_files]
@@ -33,8 +33,11 @@ def render_main_content(use_web_search, tone, focus, length):
             st.write("Extracting and Indexing Library... (This may take a minute for large files)")
             combined_text = ""
             
+            progress_bar = st.progress(0)
+            status_text = st.empty()
             with st.spinner("Processing Library into Vector Database..."):
-                for f in uploaded_files:
+                for idx, f in enumerate(uploaded_files):
+                    status_text.text(f"Extracting text from: {f.name} (this might take a moment for images/scans)...")
                     print("LOG: [Gateway 2 (Universal Ingestion Engine)] -> Started...")
                     start_ingest = time.time()
                     try:
@@ -51,6 +54,10 @@ def render_main_content(use_web_search, tone, focus, length):
                         pdf_text=text,
                         filename=f.name
                     )
+                    progress_bar.progress((idx + 1) / len(uploaded_files))
+            
+            status_text.empty()
+            progress_bar.empty()
             st.session_state.pdf_text = combined_text
             st.success("Library Indexed Successfully into ChromaDB!")
 
