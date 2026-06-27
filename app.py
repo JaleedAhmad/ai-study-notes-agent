@@ -38,7 +38,8 @@ try:
     print(f"LOG: [Gateway 1 (Authentication Check)] -> Completed in {elapsed:.2f}s")
 except Exception as e:
     print(f"LOG: [Gateway 1 (Authentication Check)] -> Exception at {time.time()}: {traceback.format_exc()}")
-    raise e
+    st.error("Authentication system encountered an error. Please try logging in again.")
+    st.stop()
 
 # Authentication check
 if st.session_state.user_id is None:

@@ -46,7 +46,8 @@ def render_main_content(use_web_search, tone, focus, length):
                         print(f"LOG: [Gateway 2 (Universal Ingestion Engine)] -> Completed in {elapsed:.2f}s | Extracted {len(text)} characters")
                     except Exception as e:
                         print(f"LOG: [Gateway 2 (Universal Ingestion Engine)] -> Exception at {time.time()}: {traceback.format_exc()}")
-                        raise e
+                        st.error(f"Failed to extract text from {f.name}. The file might be corrupted.")
+                        st.stop()
                     combined_text += f"\n\n--- Document: {f.name} ---\n\n" + text
                     rag.embed_and_store_document(
                         user_id=st.session_state.user_id,
@@ -105,10 +106,11 @@ def render_main_content(use_web_search, tone, focus, length):
                         print(f"LOG: [Gateway 5 (Session Init)] -> Completed in {elapsed:.2f}s")
                     except Exception as e:
                         print(f"LOG: [Gateway 5 (Session Init)] -> Exception at {time.time()}: {traceback.format_exc()}")
-                        raise e
+                        st.error("Failed to initialize session. Please check your connection.")
+                        st.stop()
                     st.rerun()
                 except Exception as e:
-                    st.error(f"An error occurred while generating notes. Details: {e}")
+                    st.error("Generation failed. The AI providers might be experiencing high traffic or your document is too complex. Please try again.")
 
     if st.session_state.notes:
         render_notes_section()
