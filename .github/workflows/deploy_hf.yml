@@ -33,7 +33,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           
           # Add Hugging Face remote using the secret token
-          git remote add hf https://x-access-token:$HF_TOKEN@huggingface.co/spaces/$SPACE_ID
+          git remote add hf https://JaleedAhmad:$HF_TOKEN@huggingface.co/spaces/$SPACE_ID
           
           # Push to the Hugging Face Space
           git push --force hf main
