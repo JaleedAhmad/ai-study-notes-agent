@@ -26,14 +26,14 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           # Update the SPACE_ID if your Hugging Face username or space name is different
-          SPACE_ID: "JaleedAhmad/ai-study-notes-agent"
+          SPACE_ID: "Jaleed02/AI-notes-agent"
         run: |
           # Configure git identity for the action
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           
           # Add Hugging Face remote using the secret token
-          git remote add hf https://JaleedAhmad:$HF_TOKEN@huggingface.co/spaces/$SPACE_ID
+          git remote add hf https://Jaleed02:$HF_TOKEN@huggingface.co/spaces/$SPACE_ID
           
           # Push to the Hugging Face Space
           git push --force hf main
