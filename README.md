@@ -58,6 +58,7 @@ An enterprise-grade, multi-user AI Study Assistant built locally on Python & Str
 * **Core Reasoning Engine (Tier 1):** Google Gemini 2.5 Flash (`google-genai`)
 * **Secondary Fallback Engine (Tier 2):** Groq API (`llama-3.3-70b-versatile`)
 * **Tertiary Fallback Engine (Tier 3):** Hugging Face Serverless API (`meta-llama/Meta-Llama-3-70B-Instruct`)
+* **Vision & OCR Pipeline:** Gemini 2.5 Flash with fallback to Groq `llama-3.2-11b-vision-preview` (powered by `pdf2image` and `Pillow`)
 * **Vector Embeddings:** `gemini-embedding-001`
 * **Real-time Data Fetching:** Google Search Grounding API
 
@@ -121,7 +122,7 @@ Powers the intelligence of the application with absolute zero downtime. Gemini 2
 
 | Feature | Description |
 |-------|-------------|
-| **Universal Ingestion Engine** | Upload academic PDFs, Word Docs (.docx), PowerPoints (.pptx), Markdown (.md), and Text files to instantly generate tailored study notes. Customize output by **Tone**, **Focus**, and **Length**. |
+| **Universal Ingestion Engine** | Upload academic PDFs, Word Docs (.docx), PowerPoints (.pptx), Images (.png, .jpg), and Text files to instantly generate tailored study notes. Features an advanced LLM Vision cascade and smart fallback OCR for scanned documents! |
 | **Smart Pipeline Routing** | Evaluates document length dynamically. Files < 120k characters bypass vectorization directly to the LLM context. Larger files trigger chunking into an ephemeral **ChromaDB** RAG index. |
 | **High-Availability LLM Cascade** | Guarantees zero downtime. The backend automatically catches connection/rate limit errors on Google Gemini and cascades the generation request to Groq, and then to Hugging Face if needed. |
 | **Interactive Q&A & Web Search 🌐** | Chat natively with the LLM about your textbooks. Live Web Search dynamically bridges Google's enterprise **Search Grounding APIs** into your chat. |
@@ -202,14 +203,16 @@ streamlit run app.py
 
 ---
 
-## 🚀 Deployment Guide (Hugging Face Spaces)
+## 🚀 CI/CD & Deployment Guide (Hugging Face Spaces)
 
-This project is fully dockerized and ready for production deployment using Hugging Face Spaces.
+This project is fully dockerized and features a complete GitHub Actions CI/CD pipeline for seamless production deployment on Hugging Face Spaces.
 
-1. Create a new Space and select the **Docker** environment template.
-2. Upload the repository files.
-3. Configure your Space **Secrets** with all the environment variables defined in the `.env` template above. 
-4. Hugging Face will automatically construct the container using the provided Streamlit Docker SDK layout and `requirements.txt`. Note: `chroma_db/` is ephemeral by design, so no persistent volume configuration is required.
+1. Create a new Space on Hugging Face and select the **Docker** environment template.
+2. In your GitHub repository, configure your Hugging Face Access Token as a Secret named `HF_TOKEN`.
+3. Ensure `.github/workflows/deploy_hf.yml` points to your exact Hugging Face Space ID.
+4. Any pushes to the `main` branch will automatically sync and trigger a rebuild on Hugging Face Spaces!
+5. Configure your Space **Secrets** with all the environment variables defined in the `.env` template above. 
+6. Hugging Face will automatically construct the container using the provided `Dockerfile`. Note: `chroma_db/` is ephemeral by design, so no persistent volume configuration is required.
 
 ---
 
@@ -217,11 +220,12 @@ This project is fully dockerized and ready for production deployment using Huggi
 
 ```text
 ai-study-notes-agent/
+├── .github/workflows/  # Automated CI/CD Pipelines
 ├── app.py              # Main Entry Point (Streamlit)
 ├── requirements.txt    # Python Dependencies
 ├── .env                # Secret Keys (Not tracked)
 ├── src/
-│   ├── core/           # Agent Logic, Pipeline Router, LLM Cascade
+│   ├── core/           # Agent Logic, Pipeline Router, LLM Cascade, Vision Client
 │   ├── database/       # Supabase Client & Operations
 │   ├── auth/           # OAuth 2.0 (GitHub)
 │   ├── ui/             # Modular Streamlit UI Components
