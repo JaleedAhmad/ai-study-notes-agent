@@ -12,8 +12,8 @@ SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("CRITICAL: Missing SUPABASE_URL or SUPABASE_KEY inside the .env file! Phase 7 requires this constraint.")
 
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-
+def get_supabase() -> Client:
+    return create_client(SUPABASE_URL, SUPABASE_KEY)
 def create_user(email, password=None, provider="email"):
     user = get_user_by_email(email)
     if user:
@@ -24,7 +24,7 @@ def create_user(email, password=None, provider="email"):
         password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
     try:
-        res = supabase.table("users").insert({
+        res = get_supabase().table("users").insert({
             "email": email.lower(),
             "password_hash": password_hash,
             "provider": provider
@@ -52,13 +52,13 @@ def authenticate_user(email, password):
         return False, f"Account uses OAuth. Please login with {user.get('provider')}."
 
 def get_user_by_email(email):
-    res = supabase.table("users").select("*").eq("email", email.lower()).execute()
+    res = get_supabase().table("users").select("*").eq("email", email.lower()).execute()
     if res.data and len(res.data) > 0:
         return res.data[0]
     return None
 
 def get_user_by_id(user_id):
-    res = supabase.table("users").select("*").eq("id", user_id).execute()
+    res = get_supabase().table("users").select("*").eq("id", user_id).execute()
     if res.data and len(res.data) > 0:
         return res.data[0]
     return None
@@ -84,16 +84,16 @@ def create_session(user_id, filename, pdf_text, notes):
         "notes": notes,
         "chat_history": []
     }
-    res = supabase.table("sessions").insert(payload).execute()
+    res = get_supabase().table("sessions").insert(payload).execute()
     return res.data[0]["id"]
 
 def get_all_sessions(user_id):
     # Retrieve all columns inherently required by `app.py` list map loops
-    res = supabase.table("sessions").select("*").eq("user_id", user_id).order("timestamp", desc=True).execute()
+    res = get_supabase().table("sessions").select("*").eq("user_id", user_id).order("timestamp", desc=True).execute()
     return res.data if res.data else []
 
 def get_session(session_id):
-    res = supabase.table("sessions").select("*").eq("id", session_id).execute()
+    res = get_supabase().table("sessions").select("*").eq("id", session_id).execute()
     if res.data and len(res.data) > 0:
         return res.data[0]
     return None
@@ -103,7 +103,7 @@ def save_chat_message(session_id, role, content):
     if session_data:
         chat_history = session_data.get("chat_history", [])
         chat_history.append({"role": role, "content": content})
-        supabase.table("sessions").update({"chat_history": chat_history}).eq("id", session_id).execute()
+        get_supabase().table("sessions").update({"chat_history": chat_history}).eq("id", session_id).execute()
 
 def delete_session(session_id):
-    supabase.table("sessions").delete().eq("id", session_id).execute()
+    get_supabase().table("sessions").delete().eq("id", session_id).execute()
