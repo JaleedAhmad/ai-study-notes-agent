@@ -1,6 +1,23 @@
 import streamlit as st
+import re
+import time
 from ..database import database
 from ..auth import oauth
+
+def validate_email(email):
+    pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+    return re.match(pattern, email) is not None
+
+def validate_password_complexity(password):
+    if len(password) < 8:
+        return False, "Password must be at least 8 characters long."
+    if not re.search(r"[A-Z]", password):
+        return False, "Password must contain at least one uppercase letter."
+    if not re.search(r"[a-z]", password):
+        return False, "Password must contain at least one lowercase letter."
+    if not re.search(r"\d", password):
+        return False, "Password must contain at least one digit."
+    return True, ""
 
 def handle_oauth_callback():
     query_params = st.query_params
@@ -35,6 +52,22 @@ def render_login_signup_form():
     st.title("AI Study Notes Agent 📚")
     st.write("Please log in or sign up to continue.")
     
+    # Initialize rate limiting state
+    if "login_attempts" not in st.session_state:
+        st.session_state.login_attempts = 0
+    if "lockout_time" not in st.session_state:
+        st.session_state.lockout_time = None
+
+    # Check if locked out
+    if st.session_state.lockout_time:
+        if time.time() < st.session_state.lockout_time:
+            st.error(f"Too many failed attempts. Please try again in {int(st.session_state.lockout_time - time.time())} seconds.")
+            return
+        else:
+            # Reset lockout
+            st.session_state.login_attempts = 0
+            st.session_state.lockout_time = None
+
     st.markdown(f'<a href="{oauth.get_github_auth_url()}" target="_self"><button style="width:100%; padding:10px; background-color:#333; color:white; border:none; border-radius:5px; cursor:pointer;">⚫ Continue with GitHub</button></a>', unsafe_allow_html=True)
     
     st.divider()
@@ -42,32 +75,47 @@ def render_login_signup_form():
     tab1, tab2 = st.tabs(["Login", "Sign Up"])
     with tab1:
         with st.form("login_form"):
-            email = st.text_input("Email/Username")
+            email = st.text_input("Email")
             password = st.text_input("Password", type="password")
             if st.form_submit_button("Login"):
-                try:
-                    success, result = database.authenticate_user(email, password)
-                    if success:
-                        st.session_state.user_id = result
-                        st.rerun()
-                    else:
-                        st.error(result)
-                except Exception as e:
-                    st.error("Could not reach the database. Please try again.")
+                email = email.strip().lower()
+                if not email or not password:
+                    st.error("Please fill in both fields.")
+                else:
+                    try:
+                        success, result = database.authenticate_user(email, password)
+                        if success:
+                            st.session_state.login_attempts = 0
+                            st.session_state.user_id = result
+                            st.rerun()
+                        else:
+                            st.session_state.login_attempts += 1
+                            if st.session_state.login_attempts >= 5:
+                                st.session_state.lockout_time = time.time() + 180 # 3 minutes lockout
+                                st.error("Too many failed attempts. You have been locked out for 3 minutes.")
+                            else:
+                                st.error(result)
+                    except Exception as e:
+                        st.error("Could not reach the database. Please try again.")
                     
     with tab2:
         with st.form("signup_form"):
             new_email = st.text_input("New Email")
             new_password = st.text_input("New Password", type="password")
             if st.form_submit_button("Sign Up"):
-                if len(new_email) < 3 or len(new_password) < 6:
-                    st.error("Email must be at least 3 characters and password at least 6 characters.")
+                new_email = new_email.strip().lower()
+                if not validate_email(new_email):
+                    st.error("Please enter a valid email address.")
                 else:
-                    try:
-                        success, result = database.create_user(new_email, new_password)
-                        if success:
-                            st.success("Account created successfully! Please switch to the Login tab.")
-                        else:
-                            st.error(result)
-                    except Exception as e:
-                        st.error("Could not reach the database. Please try again.")
+                    is_valid, msg = validate_password_complexity(new_password)
+                    if not is_valid:
+                        st.error(msg)
+                    else:
+                        try:
+                            success, result = database.create_user(new_email, new_password)
+                            if success:
+                                st.success("Account created successfully! Please switch to the Login tab.")
+                            else:
+                                st.error(result)
+                        except Exception as e:
+                            st.error("Could not reach the database. Please try again.")
