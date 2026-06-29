@@ -15,7 +15,7 @@ from ..core import rag
 def render_main_content(use_web_search, tone, focus, length):
     st.title("AI Study Notes Agent")
 
-    uploaded_files = st.file_uploader("Upload your study material", type=["pdf", "docx", "pptx", "txt", "md", "png", "jpg", "jpeg"], accept_multiple_files=True)
+    uploaded_files = st.file_uploader("Upload your study material", type=["pdf", "docx", "pptx", "txt", "png", "jpg"], accept_multiple_files=True)
 
     if uploaded_files:
         current_filenames = [f.name for f in uploaded_files]
