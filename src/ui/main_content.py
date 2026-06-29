@@ -11,6 +11,7 @@ from ..exporters.anki_exporter import generate_anki_deck
 from ..exporters.audio import generate_audio_from_text
 from ..database import database
 from ..core import rag
+from ..security.prompt_guard import check_prompt
 
 def render_main_content(use_web_search, tone, focus, length):
     st.title("AI Study Notes Agent")
@@ -205,6 +206,11 @@ def render_chat_section(use_web_search):
     if user_question := st.chat_input("Ask a question about your notes..."):
         with st.chat_message("user"):
             st.markdown(user_question)
+            
+        guard_result = check_prompt(user_question)
+        if not guard_result.get("safe", True):
+            st.warning("⚠️ I can only help with study-related questions.")
+            return
         
         st.session_state.chat_history.append({"role": "user", "content": user_question})
         
