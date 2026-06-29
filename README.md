@@ -133,7 +133,7 @@ Powers the intelligence of the application with absolute zero downtime. Gemini 2
 | **1-Click Anki Generator 🗃️** | AI extracts factual data from your notes, injecting pairs seamlessly into an SQLite database via `genanki`, handing you an `.apkg` file directly to import into Desktop Anki Software. |
 | **Podcast Mode 🎧** | Seamlessly converts Markdown notes into an accessible spoken podcast natively in the browser leveraging `gTTS` (Google Text-To-Speech). |
 | **Cloud DB & OAuth 2.0 ☁️** | Hooked dynamically to a remote **Supabase (PostgreSQL)** database. Log in via Email/Password or **Github** OAuth. |
-| **Robust Security Setup 🛡️** | Hardened authentication with rate-limiting lockouts and password complexity requirements. Implements strict **prompt injection defenses** utilizing input sanitization and XML data boundary isolation. |
+| **Robust Security Setup 🛡️** | Hardened authentication with implicit login and rate-limiting lockouts. Features a robust 3-layer **Prompt Guard** (Regex Pattern Filter, Groq LLM Classifier, System Prompt Hardening) to block prompt injections, exfiltration, and off-topic abuse. |
 
 ---
 
@@ -232,6 +232,7 @@ ai-study-notes-agent/
 ├── src/
 │   ├── core/           # Agent Logic, Pipeline Router, LLM Cascade, Vision Client
 │   ├── database/       # Supabase Client & Operations
+│   ├── security/       # 3-Layer Prompt Guard & Attack Mitigation
 │   ├── auth/           # OAuth 2.0 (GitHub)
 │   ├── ui/             # Modular Streamlit UI Components
 │   ├── exporters/      # PDF, Anki, & Audio Generation
