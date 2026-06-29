@@ -114,7 +114,10 @@ def render_login_signup_form():
                         try:
                             success, result = database.create_user(new_email, new_password)
                             if success:
-                                st.success("Account created successfully! Please switch to the Login tab.")
+                                user = database.get_user_by_email(new_email)
+                                st.session_state.login_attempts = 0
+                                st.session_state.user_id = user["id"]
+                                st.rerun()
                             else:
                                 st.error(result)
                         except Exception as e:
