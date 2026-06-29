@@ -128,12 +128,12 @@ Powers the intelligence of the application with absolute zero downtime. Gemini 2
 |-------|-------------|
 | **Universal Ingestion Engine** | Upload academic PDFs, Word Docs (.docx), PowerPoints (.pptx), Images (.png, .jpg), and Text files to instantly generate tailored study notes. Features an advanced LLM Vision cascade and smart fallback OCR for scanned documents! |
 | **Smart Pipeline Routing** | Evaluates document length dynamically. Files < 120k characters bypass vectorization directly to the LLM context. Larger files trigger chunking into an ephemeral **ChromaDB** RAG index. |
-| **High-Availability LLM Cascade** | Guarantees zero downtime. The backend automatically catches connection/rate limit errors on Google Gemini and cascades the generation request to Groq, and then to Hugging Face if needed. |
+| **High-Availability LLM Cascade** | Guarantees zero downtime. The backend automatically catches connection/rate limit errors on Google Gemini and cascades the generation request to Groq, and then to Hugging Face if needed. All core Gemini Agent calls (`generate_content` and `send_chat_message`) are actively wrapped with dynamic Groq fallbacks. |
 | **Interactive Q&A & Web Search 🌐** | Chat natively with the LLM about your textbooks. Live Web Search dynamically bridges Google's enterprise **Search Grounding APIs** into your chat. |
 | **1-Click Anki Generator 🗃️** | AI extracts factual data from your notes, injecting pairs seamlessly into an SQLite database via `genanki`, handing you an `.apkg` file directly to import into Desktop Anki Software. |
 | **Podcast Mode 🎧** | Seamlessly converts Markdown notes into an accessible spoken podcast natively in the browser leveraging `gTTS` (Google Text-To-Speech). |
 | **Cloud DB & OAuth 2.0 ☁️** | Hooked dynamically to a remote **Supabase (PostgreSQL)** database. Log in via Email/Password or **Github** OAuth. |
-| **Robust Security Setup 🛡️** | Hardened authentication with implicit login and rate-limiting lockouts. Features a robust 3-layer **Prompt Guard** (Regex Pattern Filter, Groq LLM Classifier, System Prompt Hardening) to block prompt injections, exfiltration, and off-topic abuse. |
+| **Robust Security Setup 🛡️** | Hardened authentication with rate-limiting lockouts, implicit login after signup, and password complexity requirements. Implements a strict **3-Layer Prompt Guard** (Regex pattern filtering, Groq `llama-3` LLM-based classification, and System Prompt boundaries) to block prompt injections, off-topic spam, and data exfiltration attempts. |
 
 ---
 
@@ -231,8 +231,8 @@ ai-study-notes-agent/
 ├── .env                # Secret Keys (Not tracked)
 ├── src/
 │   ├── core/           # Agent Logic, Pipeline Router, LLM Cascade, Vision Client
+│   ├── security/       # 3-Layer Prompt Guard & AI Security Classifiers
 │   ├── database/       # Supabase Client & Operations
-│   ├── security/       # 3-Layer Prompt Guard & Attack Mitigation
 │   ├── auth/           # OAuth 2.0 (GitHub)
 │   ├── ui/             # Modular Streamlit UI Components
 │   ├── exporters/      # PDF, Anki, & Audio Generation
