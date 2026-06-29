@@ -1,5 +1,13 @@
 from google import genai
 from google.genai import types
+from google.api_core.exceptions import (
+    ServiceUnavailable,
+    ResourceExhausted,
+    DeadlineExceeded,
+    InternalServerError,
+)
+import streamlit as st
+from .llm_client import groq_client
 from .prompts import STUDY_AGENT_PROMPT
 import os
 from dotenv import load_dotenv
@@ -37,13 +45,24 @@ def generate_study_notes(text, tone="Academic", focus="General Summary", length=
     if use_web_search:
         config.tools = [{"google_search": {}}]
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt,
-        config=config
-    )
-
-    return response.text
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+            config=config
+        )
+        return response.text
+    except (ServiceUnavailable, ResourceExhausted, DeadlineExceeded, InternalServerError, Exception) as e:
+        st.warning("⚠️ Gemini unavailable, switching to Groq fallback...")
+        try:
+            fallback_response = groq_client.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=[{"role": "user", "content": prompt}]
+            )
+            return fallback_response.choices[0].message.content
+        except Exception:
+            st.error("Both Gemini and Groq are unavailable. Please try again later.")
+            return None
 
 def initialize_chat(pdf_text, chat_history=None, use_web_search=False):
     from google.genai import types
@@ -82,5 +101,26 @@ def initialize_chat(pdf_text, chat_history=None, use_web_search=False):
     return chat
 
 def send_chat_message(chat_session, user_message):
-    response = chat_session.send_message(user_message)
-    return response.text
+    try:
+        response = chat_session.send_message(user_message)
+        return response.text
+    except (ServiceUnavailable, ResourceExhausted, DeadlineExceeded, InternalServerError, Exception) as e:
+        st.warning("⚠️ Gemini unavailable, switching to Groq fallback...")
+        try:
+            messages = []
+            if hasattr(chat_session, 'get_history'):
+                for msg in chat_session.get_history():
+                    role = "user" if msg.role == "user" else "assistant"
+                    text = msg.parts[0].text if (msg.parts and len(msg.parts) > 0) else ""
+                    messages.append({"role": role, "content": text})
+                    
+            messages.append({"role": "user", "content": user_message})
+            
+            fallback_response = groq_client.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=messages
+            )
+            return fallback_response.choices[0].message.content
+        except Exception:
+            st.error("Both Gemini and Groq are unavailable. Please try again later.")
+            return None
