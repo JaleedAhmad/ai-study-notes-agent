@@ -23,6 +23,29 @@ assertions. The full suite now has 119 tests (99 pass, 20 fail) and exits 1;
 all prior 83 tests still pass. See [OAuth investigation](OAUTH.md) for the flow,
 failure mapping, isolation limits, and unapproved state/subject migration options.
 
+Batch 4B-1 adds five launcher tests: 124 total, 104 passing and the same 20
+ordinary OAuth assertion failures (exit 1). They use fake Streamlit/Starlette
+objects to verify the absolute root script, single named GET health route,
+constant public response, import isolation and CLI-controlled startup. They do not
+simulate a real WebSocket or validate SDK compatibility.
+
+The production launcher is `streamlit run server.py` from the project root.
+Streamlit 1.60.0 detects the exported `st.App` and starts its native server using
+the existing CLI configuration and environment;
+Docker continues to expose port 7860. `/health` is process liveness only, not a
+database/provider readiness check. No OAuth routing or authentication changes
+are included. `server.py` has an explicit Docker build-context allowlist entry.
+Keep the CLI startup: the isolated 1.60.0 check found that calling `App.run()`
+without explicit overrides used default host/port rather than Docker's existing
+environment options. The CLI launched correctly on the configured port 7860.
+
+An isolated runtime smoke check exercised real Streamlit/Starlette HTTP and
+WebSocket handling with copies of the unchanged `app.py` and identity helper,
+replacing only UI/provider entry points with synthetic test modules. Root HTML,
+custom and built-in health, GET/HEAD/POST behavior, and both logged-out and
+authenticated UI branches passed. Reserved route conflicts were also rejected.
+This does not verify live SDK operations, browser behavior, or Hugging Face routing.
+
 The suite imports real application source with test-only SDK modules installed
 before import. Dotenv loading is a no-op, the dedicated process discards inherited
 environment values, and only synthetic credentials are supplied. Model, HTTP,

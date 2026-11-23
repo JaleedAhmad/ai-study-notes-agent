@@ -23,4 +23,4 @@ ENV STREAMLIT_SERVER_MAX_UPLOAD_SIZE=500
 
 EXPOSE 7860
 
-CMD ["streamlit", "run", "app.py"]
+CMD ["streamlit", "run", "server.py"]

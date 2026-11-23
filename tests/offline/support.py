@@ -54,7 +54,7 @@ class Sandbox:
             return
         if path.is_relative_to(self.stdlib):
             return
-        if path == self.repository / "app.py":
+        if path in (self.repository / "app.py", self.repository / "server.py"):
             return
         if path.suffix in (".py", ".pyc") and any(
             path.is_relative_to(self.repository / folder) for folder in ("src", "tests")

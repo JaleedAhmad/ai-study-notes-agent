@@ -3,6 +3,7 @@
 !Dockerfile
 !requirements.txt
 !app.py
+!server.py
 !LICENSE
 !src/
 !src/**
