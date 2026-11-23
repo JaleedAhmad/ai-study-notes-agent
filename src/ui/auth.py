@@ -3,6 +3,20 @@ import re
 import time
 from ..database import database
 from ..auth import oauth
+from ..auth.identity import validate_user_id
+
+
+def establish_authenticated_session(result):
+    """Accept only an explicit success and a valid ID from authentication."""
+    st.session_state.user_id = None
+    if not isinstance(result, tuple) or len(result) != 2 or result[0] is not True:
+        return False
+    try:
+        identity = validate_user_id(result[1])
+    except PermissionError:
+        return False
+    st.session_state.user_id = identity
+    return True
 
 def validate_email(email):
     pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
@@ -33,9 +47,8 @@ def handle_oauth_callback():
             
         if email:
             try:
-                success, uid = database.authenticate_oauth_user(email, state)
-                if success:
-                    st.session_state.user_id = uid
+                result = database.authenticate_oauth_user(email, state)
+                if establish_authenticated_session(result):
                     st.query_params.clear()
                     st.rerun()
                 else:
@@ -83,10 +96,9 @@ def render_login_signup_form():
                     st.error("Please fill in both fields.")
                 else:
                     try:
-                        success, result = database.authenticate_user(email, password)
-                        if success:
+                        result = database.authenticate_user(email, password)
+                        if establish_authenticated_session(result):
                             st.session_state.login_attempts = 0
-                            st.session_state.user_id = result
                             st.rerun()
                         else:
                             st.session_state.login_attempts += 1
@@ -94,7 +106,7 @@ def render_login_signup_form():
                                 st.session_state.lockout_time = time.time() + 180 # 3 minutes lockout
                                 st.error("Too many failed attempts. You have been locked out for 3 minutes.")
                             else:
-                                st.error(result)
+                                st.error("Unable to sign in. Check your credentials or sign-in method.")
                     except Exception as e:
                         st.error("Could not reach the database. Please try again.")
                     
@@ -112,13 +124,11 @@ def render_login_signup_form():
                         st.error(msg)
                     else:
                         try:
-                            success, result = database.create_user(new_email, new_password)
-                            if success:
-                                user = database.get_user_by_email(new_email)
+                            result = database.create_user(new_email, new_password)
+                            if establish_authenticated_session(result):
                                 st.session_state.login_attempts = 0
-                                st.session_state.user_id = user["id"]
                                 st.rerun()
                             else:
-                                st.error(result)
+                                st.error("Unable to create account. Check your details or try signing in.")
                         except Exception as e:
                             st.error("Could not reach the database. Please try again.")

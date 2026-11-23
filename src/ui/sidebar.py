@@ -2,8 +2,10 @@ import streamlit as st
 from datetime import datetime
 from ..database import database
 from ..core.agent import initialize_chat
+from ..auth.identity import current_user_id
 
 def render_sidebar():
+    user_id = current_user_id()
     with st.sidebar:
         st.title("🌐 AI Capabilities")
         use_web_search = st.toggle("Enable Live Web Search", value=False, help="Allows the AI to intelligently search Google to supplement your textbook notes with up-to-date real-world context.")
@@ -31,7 +33,7 @@ def render_sidebar():
         st.divider()
         
         try:
-            sessions = database.get_all_sessions(st.session_state.user_id)
+            sessions = database.get_all_sessions(user_id)
         except Exception as e:
             sessions = []
             st.error("Could not load chat history. Database connection failed.")
@@ -47,20 +49,27 @@ def render_sidebar():
             
             with col1:
                 if st.button(btn_label, key=f"load_{session['id']}"):
-                    st.session_state.current_session_id = session["id"]
-                    st.session_state.pdf_text = session["pdf_text"]
-                    st.session_state.notes = session["notes"]
-                    st.session_state.chat_history = session["chat_history"]
-                    st.session_state.chat_session = initialize_chat(session["pdf_text"], session["chat_history"], use_web_search=use_web_search)
-                    st.session_state.current_file = session["filename"]
-                    st.session_state.podcast_bytes = None
-                    st.session_state.anki_bytes = None
-                    st.rerun()
+                    try:
+                        owned_session = database.get_session(session["id"], user_id=user_id)
+                        if owned_session is None:
+                            st.error("Session unavailable.")
+                        else:
+                            st.session_state.current_session_id = owned_session["id"]
+                            st.session_state.pdf_text = owned_session["pdf_text"]
+                            st.session_state.notes = owned_session["notes"]
+                            st.session_state.chat_history = owned_session["chat_history"]
+                            st.session_state.chat_session = initialize_chat(owned_session["pdf_text"], owned_session["chat_history"], use_web_search=use_web_search)
+                            st.session_state.current_file = owned_session["filename"]
+                            st.session_state.podcast_bytes = None
+                            st.session_state.anki_bytes = None
+                            st.rerun()
+                    except Exception:
+                        st.error("Could not load session. Please try again.")
             
             with col2:
                 if st.button("🗑️", key=f"del_{session['id']}"):
                     try:
-                        database.delete_session(session["id"])
+                        database.delete_session(session["id"], user_id=user_id)
                         if st.session_state.current_session_id == session["id"]:
                             st.session_state.current_session_id = None
                             st.session_state.notes = None

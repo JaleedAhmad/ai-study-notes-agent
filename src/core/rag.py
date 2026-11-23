@@ -7,6 +7,7 @@ from google import genai
 from google.genai import types
 
 import streamlit as st
+from ..auth.identity import require_authenticated_user
 
 # Initialize ChromaDB persistent client locally
 CHROMA_DB_DIR = "./chroma_db"
@@ -37,6 +38,7 @@ def chunk_text(text):
 
 def embed_and_store_document(user_id, document_id, pdf_text, filename):
     """Chunks a raw PDF, calculates vectors for each chunk, and saves to the user's Chroma collection."""
+    user_id = require_authenticated_user(user_id)
     client = get_chroma_client()
     collection = client.get_or_create_collection(name="user_libraries")
     
@@ -74,6 +76,7 @@ def embed_and_store_document(user_id, document_id, pdf_text, filename):
         
 def query_relevant_chunks(user_id, query, n_results=5):
     """Full Library Search: Searches ALL textbooks uploaded by the user to find the best 5 paragraphs."""
+    user_id = require_authenticated_user(user_id)
     client = get_chroma_client()
     collection = client.get_or_create_collection(name="user_libraries")
     

@@ -4,6 +4,7 @@ import traceback
 from src.ui.auth import handle_oauth_callback, render_login_signup_form
 from src.ui.sidebar import render_sidebar
 from src.ui.main_content import render_main_content
+from src.auth.identity import current_user_id
 
 st.set_page_config(page_title="AI Study Notes Agent", page_icon="📚")
 
@@ -42,7 +43,14 @@ except Exception as e:
     st.stop()
 
 # Authentication check
-if st.session_state.user_id is None:
+try:
+    st.session_state.user_id = current_user_id()
+except PermissionError:
+    # Discard stale study data when an invalid, non-null identity is encountered.
+    # Keep login-attempt counters during normal logged-out renders.
+    if st.session_state.user_id is not None:
+        st.session_state.clear()
+    st.session_state.user_id = None
     render_login_signup_form()
     st.stop()
 

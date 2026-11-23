@@ -12,8 +12,10 @@ from ..exporters.audio import generate_audio_from_text
 from ..database import database
 from ..core import rag
 from ..security.prompt_guard import check_prompt
+from ..auth.identity import current_user_id
 
 def render_main_content(use_web_search, tone, focus, length):
+    user_id = current_user_id()
     st.title("AI Study Notes Agent")
 
     uploaded_files = st.file_uploader("Upload your study material", type=["pdf", "docx", "pptx", "txt", "png", "jpg"], accept_multiple_files=True)
@@ -51,7 +53,7 @@ def render_main_content(use_web_search, tone, focus, length):
                         st.stop()
                     combined_text += f"\n\n--- Document: {f.name} ---\n\n" + text
                     rag.embed_and_store_document(
-                        user_id=st.session_state.user_id,
+                        user_id=user_id,
                         document_id=f"{st.session_state.library_id}_{f.name}",
                         pdf_text=text,
                         filename=f.name
@@ -98,7 +100,7 @@ def render_main_content(use_web_search, tone, focus, length):
                     start_session = time.time()
                     try:
                         st.session_state.current_session_id = database.create_session(
-                            st.session_state.user_id,
+                            user_id,
                             ", ".join(st.session_state.current_file) if isinstance(st.session_state.current_file, list) else st.session_state.current_file, 
                             st.session_state.pdf_text, 
                             st.session_state.notes
@@ -217,7 +219,7 @@ def render_chat_section(use_web_search):
         print("LOG: [Gateway 5 (Chat Append)] -> Started...")
         start_append = time.time()
         try:
-            database.save_chat_message(st.session_state.current_session_id, "user", user_question)
+            database.save_chat_message(st.session_state.current_session_id, "user", user_question, user_id=current_user_id())
             print(f"LOG: [Gateway 5 (Chat Append)] -> Completed in {time.time() - start_append:.2f}s")
         except Exception as e:
             print(f"LOG: [Gateway 5 (Chat Append)] -> Exception at {time.time()}: {traceback.format_exc()}")
@@ -225,7 +227,7 @@ def render_chat_section(use_web_search):
         with st.chat_message("assistant"):
             with st.spinner("Searching Library & Thinking..."):
                 try:
-                    relevant_context = rag.query_relevant_chunks(st.session_state.user_id, user_question)
+                    relevant_context = rag.query_relevant_chunks(current_user_id(), user_question)
                     
                     if relevant_context:
                         sanitized_context = str(relevant_context).replace("<system_context>", "").replace("</system_context>", "")
@@ -248,7 +250,7 @@ User Question: {user_question}"""
                     print("LOG: [Gateway 5 (Chat Append)] -> Started...")
                     start_append = time.time()
                     try:
-                        database.save_chat_message(st.session_state.current_session_id, "assistant", answer)
+                        database.save_chat_message(st.session_state.current_session_id, "assistant", answer, user_id=current_user_id())
                         print(f"LOG: [Gateway 5 (Chat Append)] -> Completed in {time.time() - start_append:.2f}s")
                     except Exception as e:
                         print(f"LOG: [Gateway 5 (Chat Append)] -> Exception at {time.time()}: {traceback.format_exc()}")
