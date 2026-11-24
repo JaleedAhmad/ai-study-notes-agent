@@ -56,6 +56,8 @@ class Sandbox:
             return
         if path in (self.repository / "app.py", self.repository / "server.py"):
             return
+        if path == self.repository / "migrations/proposals/4b2a_oauth_storage.sql.md":
+            return
         if path.suffix in (".py", ".pyc") and any(
             path.is_relative_to(self.repository / folder) for folder in ("src", "tests")
         ):

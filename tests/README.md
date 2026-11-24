@@ -46,6 +46,23 @@ custom and built-in health, GET/HEAD/POST behavior, and both logged-out and
 authenticated UI branches passed. Reserved route conflicts were also rejected.
 This does not verify live SDK operations, browser behavior, or Hugging Face routing.
 
+Batch 4B-2A adds 32 passing design checks: 12 static/lexical checks of the
+explicitly non-executable [OAuth storage SQL proposal](../migrations/proposals/4b2a_oauth_storage.sql.md)
+and 20 behavioral checks of a separate test-only reference model. The suite has
+156 tests: 136 pass and the same 20 current-production OAuth assertions fail
+(exit 1). See [migration review and deployment gates](../migrations/README.md).
+The model implements intended rules; it is not used by the existing OAuth mocks
+and does not prove PostgreSQL ACLs/RLS, concurrency or current application safety.
+The sandbox grants read access only to that exact reviewed SQL proposal path;
+secret reads, networking, repository writes and subprocesses remain blocked.
+
+Batch 4B-2B validates the corrected proposal in a separate disposable PostgreSQL
+16.16 container ([results](../migrations/POSTGRES_VALIDATION.md)). A nil-UUID
+default revealed a partial-account commit on failure; the draft now raises to
+roll back that case. One static regression brings this offline suite to 157
+tests: 137 passing and the same 20 OAuth failures. Real PostgreSQL checks remain
+separate; the offline command does not require Docker or contact any database.
+
 The suite imports real application source with test-only SDK modules installed
 before import. Dotenv loading is a no-op, the dedicated process discards inherited
 environment values, and only synthetic credentials are supplied. Model, HTTP,
