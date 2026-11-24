@@ -323,22 +323,20 @@ class VectorOwnershipContracts(OfflineCase):
     def test_library_query_filters_the_supplied_user(self):
         sys.modules["streamlit"].session_state = SimpleNamespace(user_id=USER_A)
         rag = self.app("src.core.rag")
-        records = [(USER_B, "synthetic B"), (USER_A, "synthetic A")]
-
-        def query(**kwargs):
-            where = kwargs.get("where", {})
-            selected = [(owner, text) for owner, text in records
-                        if all({"user_id": owner}.get(key) == value for key, value in where.items())]
-            return {"documents": [[text for _, text in selected]],
-                    "metadatas": [[{"filename": "synthetic.txt"} for _ in selected]]}
-
-        collection = Mock()
-        collection.count.return_value = len(records)
-        collection.query.side_effect = query
+        # Exercise the same ownership assertion using verifiable index records.
+        # The raw fake applies only the actual caller predicate, without auth or
+        # completion enforcement. Assertions below are unchanged.
+        from offline.fake_vectors import MemoryCollection
+        collection = Mock(wraps=MemoryCollection())
         client = Mock()
         client.get_or_create_collection.return_value = collection
         with patch.object(rag, "get_chroma_client", return_value=client), \
+                patch.object(rag, "chunk_text", side_effect=lambda text: [text]), \
                 patch.object(rag, "get_gemini_embedding", return_value=[0.0]):
+            for owner, text in ((USER_B, "synthetic B"), (USER_A, "synthetic A")):
+                sys.modules["streamlit"].session_state = SimpleNamespace(user_id=owner)
+                rag.embed_and_store_document(owner, "doc", text, "synthetic.txt")
+            sys.modules["streamlit"].session_state = SimpleNamespace(user_id=USER_A)
             context = rag.query_relevant_chunks(USER_A, "synthetic question")
         self.assertIn("synthetic A", context)
         self.assertNotIn("synthetic B", context)

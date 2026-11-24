@@ -63,6 +63,19 @@ roll back that case. One static regression brings this offline suite to 157
 tests: 137 passing and the same 20 OAuth failures. Real PostgreSQL checks remain
 separate; the offline command does not require Docker or contact any database.
 
+Batch 5A adds 48 extraction/ingestion tests: 15 passing controls and 33 ordinary
+failing correctness assertions. The complete suite has 205 tests: 152 passing,
+20 unchanged OAuth failures and 33 extraction failures (exit 1), with no errors.
+See [extraction investigation and source mapping](EXTRACTION.md). Actual extractor,
+vision, RAG, routing and UI code runs with synthetic parser/provider/storage
+outputs; no real document parsers, OCR services or databases are exercised.
+
+Batch 5B-1 fixes 28 of the 33 extraction assertions using typed errors and shared
+content validation, without changing the original 48 assertions. Twenty new checks
+bring the suite to 225 tests: 200 pass, 20 known OAuth assertions and five scheduled
+coverage/indexing/cache assertions fail (exit 1). See the implemented section of
+[extraction contracts](EXTRACTION.md) for current interfaces, scope and limitations.
+
 The suite imports real application source with test-only SDK modules installed
 before import. Dotenv loading is a no-op, the dedicated process discards inherited
 environment values, and only synthetic credentials are supplied. Model, HTTP,
@@ -85,6 +98,13 @@ sandbox for malicious code or a guarantee about native extensions. The supported
 command excludes installed third-party packages. SDK compatibility, parser
 accuracy, RLS, deployment, and real provider behavior require separate authorized
 integration tests. The fakes are not substitutes for those checks.
+
+Batch 5B-2 adds 22 passing PDF coverage/UI checks: **247 total, 224 passing,
+23 ordinary failures** (the same 20 OAuth failures and three scheduled
+index/cache/session failures). Both remaining PDF defects now pass. Single-page
+rendering replaces bulk fallback; the original valid scan test checks exact
+per-page ranges. See [page policies and limits](EXTRACTION.md#batch-5b-2-page-level-pdf-coverage).
+The suite uses synthetic parser/renderer/OCR responses, not real Poppler or APIs.
 
 ## Existing tests and scripts
 
@@ -117,3 +137,14 @@ with `self.app(...)`, not at collection time. Patch the narrow external operatio
 under test and use synthetic inputs. Use `self.workdir` or `TemporaryDirectory`
 for artifacts. Do not assert that current known defects are correct behavior;
 add their regression cases alongside the later remediation batch.
+
+Batch 5B-3 adds 42 passing indexing/router/UI checks: **289 total, 267 passing,
+22 ordinary failures** (20 unchanged OAuth failures and two deferred cache/session
+failures). EXTRACT-28 now passes. Actual indexing requires complete embedding and
+verified Chroma readback; tests use raw partial-write-capable in-memory storage,
+not real Chroma or SDK calls. See [completion contracts, retry and legacy limits](INDEXING.md).
+
+Batch 5B-4 adds 39 passing document identity, saved-session, generation and chat
+checks: **328 total, 308 passing, only the 20 unchanged OAuth assertions failing**.
+Both remaining EXTRACT-29/30 contracts now pass. See [source identity and cache contracts](DOCUMENT_STATE.md)
+for legacy handling, test adaptations and unverified real Streamlit/Chroma behavior.
