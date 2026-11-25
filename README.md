@@ -203,7 +203,7 @@ ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
 ### 5. Launch Application
 ```bash
 source venv/bin/activate  # (Use .\venv\Scripts\activate on Windows)
-streamlit run app.py
+streamlit run server.py
 ```
 
 ---

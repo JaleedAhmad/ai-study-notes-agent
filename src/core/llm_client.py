@@ -5,6 +5,7 @@ import traceback
 from dotenv import load_dotenv
 from google import genai
 from openai import OpenAI
+from ..utils.generation_validation import gemini_text, openai_text, MAX_OUTPUT_TOKENS, FAILURE_MESSAGE
 
 load_dotenv()
 
@@ -25,8 +26,10 @@ hf_client = OpenAI(api_key=hf_api_key, base_url="https://api-inference.huggingfa
 
 def generate_content(prompt):
     """
-    Cascading generation hub providing absolute downtime insurance.
-    Returns: (success: bool, text_payload: str, provider: str)
+    Cascading generation with validated payloads and explicit completion evidence.
+    Returns: (success: bool, text_payload: str, provider: str).
+    Success means usable text, not certified completeness or accuracy. The
+    string-compatible payload carries reported_finished or unknown metadata.
     """
     print("LOG: [Gateway 4 (LLM Client Generation Hub)] -> Started...")
     start_llm = time.time()
@@ -37,13 +40,15 @@ def generate_content(prompt):
                 print("Attempting Tier 1 (Google Gemini 2.5 Flash)...")
                 response = gemini_client.models.generate_content(
                     model="gemini-2.5-flash",
-                    contents=prompt
+                    contents=prompt,
+                    config={"max_output_tokens": MAX_OUTPUT_TOKENS}
                 )
+                payload = gemini_text(response)
                 elapsed = time.time() - start_llm
                 print(f"LOG: [Gateway 4 (LLM Client Generation Hub)] -> Completed in {elapsed:.2f}s")
-                return True, response.text, "Google Gemini"
+                return True, payload, "Google Gemini"
             except Exception as e:
-                print(f"[Tier 1 Error] Gemini failed: {e}", file=sys.stderr)
+                print("[Tier 1 Error] Gemini did not return a usable finished response.", file=sys.stderr)
         else:
             print("[Tier 1 Warning] Gemini API Key missing.", file=sys.stderr)
 
@@ -53,13 +58,15 @@ def generate_content(prompt):
                 print("Attempting Tier 2 (Groq llama-3.3-70b-versatile)...")
                 response = groq_client.chat.completions.create(
                     model="llama-3.3-70b-versatile",
-                    messages=[{"role": "user", "content": prompt}]
+                    messages=[{"role": "user", "content": prompt}],
+                    max_tokens=MAX_OUTPUT_TOKENS
                 )
+                payload = openai_text(response)
                 elapsed = time.time() - start_llm
                 print(f"LOG: [Gateway 4 (LLM Client Generation Hub)] -> Completed in {elapsed:.2f}s")
-                return True, response.choices[0].message.content, "Groq"
+                return True, payload, "Groq"
             except Exception as e:
-                print(f"[Tier 2 Error] Groq failed: {e}", file=sys.stderr)
+                print("[Tier 2 Error] Groq did not return a usable finished response.", file=sys.stderr)
         else:
             print("[Tier 2 Warning] Groq API Key missing.", file=sys.stderr)
 
@@ -70,13 +77,14 @@ def generate_content(prompt):
                 response = hf_client.chat.completions.create(
                     model="meta-llama/Meta-Llama-3-70B-Instruct",
                     messages=[{"role": "user", "content": prompt}],
-                    max_tokens=2048 # Explicit tokens added for HF compatibility just in case
+                    max_tokens=MAX_OUTPUT_TOKENS
                 )
+                payload = openai_text(response)
                 elapsed = time.time() - start_llm
                 print(f"LOG: [Gateway 4 (LLM Client Generation Hub)] -> Completed in {elapsed:.2f}s")
-                return True, response.choices[0].message.content, "Hugging Face"
+                return True, payload, "Hugging Face"
             except Exception as e:
-                print(f"[Tier 3 Error] Hugging Face failed: {e}", file=sys.stderr)
+                print("[Tier 3 Error] Hugging Face did not return a usable finished response.", file=sys.stderr)
         else:
             print("[Tier 3 Warning] Hugging Face API Key missing.", file=sys.stderr)
 
@@ -84,7 +92,7 @@ def generate_content(prompt):
         print("[CRITICAL] All LLM endpoints failed.", file=sys.stderr)
         elapsed = time.time() - start_llm
         print(f"LOG: [Gateway 4 (LLM Client Generation Hub)] -> Completed in {elapsed:.2f}s")
-        return False, "All LLM generation endpoints are currently unreachable. Please try again later.", "None"
+        return False, FAILURE_MESSAGE, "None"
     except Exception as e:
         print(f"LOG: [Gateway 4 (LLM Client Generation Hub)] -> Exception at {time.time()}: {traceback.format_exc()}")
         raise e

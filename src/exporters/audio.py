@@ -1,3 +1,4 @@
+from ..utils.source_manifest import plain_notes
 import re
 import os
 import uuid
@@ -8,6 +9,7 @@ def clean_markdown_for_speech(markdown_text):
     Cleans markdown formatting elements from text so that the gTTS 
     robot speaks naturally without reading asterisks or hashes.
     """
+    markdown_text = plain_notes(markdown_text)
     # Remove large markdown headings but keep text and add a period for natural pause
     text = re.sub(r'#+\s*(.*)', r'\1.', markdown_text)
     # Remove asterisks (bold/italics)
