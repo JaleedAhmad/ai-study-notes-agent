@@ -1,3 +1,4 @@
+from ..utils.source_manifest import plain_notes
 import tempfile
 import os
 import uuid
@@ -6,6 +7,7 @@ import random
 from google import genai
 
 def generate_anki_deck(notes_text):
+    notes_text = plain_notes(notes_text)
     client = genai.Client()
     
     # Advanced logic prompt to strictly force the AI to return parseable data arrays

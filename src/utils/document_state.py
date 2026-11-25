@@ -8,6 +8,7 @@ import json
 from pathlib import PurePath
 
 from .extraction_validation import ExtractionError, validate_extracted_text
+from .source_manifest import load_notes
 
 PROCESSING_VERSION = "extraction-index-v1"
 
@@ -133,7 +134,7 @@ def restore_saved_session(state, row, owner):
     state["current_session_id"] = row["id"]
     state["current_file"] = row.get("filename")
     state["pdf_text"] = text
-    state["notes"] = row.get("notes")
+    state["notes"] = load_notes(row.get("notes"), text)
     state["chat_history"] = deepcopy(history)
     token = mark_ready(state, owner)
     state["notes_source"] = token

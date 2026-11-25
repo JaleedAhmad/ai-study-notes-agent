@@ -1,7 +1,9 @@
+from ..utils.source_manifest import plain_notes
 from fpdf import FPDF
 import markdown
 
 def generate_pdf(md_text):
+    md_text = plain_notes(md_text)
     html = markdown.markdown(md_text)
     
     pdf = FPDF()

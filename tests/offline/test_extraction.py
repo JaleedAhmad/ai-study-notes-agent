@@ -564,6 +564,8 @@ class UploadUIFixtures(ExtractionFixtures):
                                                            wraps=self.extractor.extract_universal_text))
         self.router = self.stack.enter_context(patch.object(self.ui, "route_and_process",
             return_value=(False, "synthetic generation stopped", "offline", "offline")))
+        self.real_notes_view = self.ui.render_notes_section
+        self.real_podcast_view = self.ui.render_podcast_section
         self.notes_view = self.stack.enter_context(patch.object(self.ui, "render_notes_section"))
         self.stack.enter_context(patch.object(self.ui, "render_podcast_section"))
         self.real_chat_view = self.ui.render_chat_section

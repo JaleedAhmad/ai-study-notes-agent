@@ -288,7 +288,8 @@ class EphemeralIndexContracts(OfflineCase):
         self.error = self.app("src.core.indexing").IndexingError
 
     def run_route(self):
-        return self.router.route_and_process("synthetic long source", "question", None, self.model)
+        return self.router.route_and_process("synthetic long source", "question", None, self.model,
+                                             comprehensive=False)
 
     def test_complete_index_reaches_model_and_is_removed(self):
         result = self.run_route()

@@ -287,7 +287,10 @@ class DocumentUIContracts(UploadUIFixtures):
     def test_generation_and_persistence_use_current_selected_source(self):
         self.process()
         self.st.button.return_value = True
-        self.router.return_value = (True, "current generated notes", "offline", "direct")
+        router = self.app("src.core.pipeline_router")
+        self.router.side_effect = lambda **kwargs: router.route_and_process(
+            kwargs["raw_text"], kwargs["query"], None,
+            lambda prompt: (True, "current generated notes", "offline"))
         with patch.object(self.ui, "initialize_chat", return_value=object()) as chat, \
                 patch.object(self.ui.database, "create_session", return_value=SESSION_A) as save:
             self.render()

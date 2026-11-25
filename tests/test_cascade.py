@@ -1,5 +1,6 @@
 import sys
 import os
+from types import SimpleNamespace
 from unittest.mock import patch, MagicMock
 
 # Add parent to path for imports
@@ -32,8 +33,8 @@ def test_tier_2_fallback():
         
         mock_gemini.models.generate_content.side_effect = Exception("Simulated Gemini Outage")
         
-        mock_response = MagicMock()
-        mock_response.choices[0].message.content = "Groq response"
+        mock_response = SimpleNamespace(choices=[SimpleNamespace(
+            message=SimpleNamespace(content="Groq response"), finish_reason="stop")])
         mock_groq.chat.completions.create.return_value = mock_response
         
         success, payload, provider = llm_client.generate_content("Hello, world!")
@@ -52,8 +53,8 @@ def test_tier_3_fallback():
         mock_gemini.models.generate_content.side_effect = Exception("Simulated Gemini Outage")
         mock_groq.chat.completions.create.side_effect = Exception("Simulated Groq Outage")
         
-        mock_response = MagicMock()
-        mock_response.choices[0].message.content = "HF response"
+        mock_response = SimpleNamespace(choices=[SimpleNamespace(
+            message=SimpleNamespace(content="HF response"), finish_reason="stop")])
         mock_hf.chat.completions.create.return_value = mock_response
         
         success, payload, provider = llm_client.generate_content("Hello, world!")

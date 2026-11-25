@@ -148,3 +148,32 @@ Batch 5B-4 adds 39 passing document identity, saved-session, generation and chat
 checks: **328 total, 308 passing, only the 20 unchanged OAuth assertions failing**.
 Both remaining EXTRACT-29/30 contracts now pass. See [source identity and cache contracts](DOCUMENT_STATE.md)
 for legacy handling, test adaptations and unverified real Streamlit/Chroma behavior.
+
+Batch 6A adds 37 investigation/regression tests for long-document coverage and
+generation eligibility: **365 total, 325 passing, 40 ordinary failures** (the same
+20 OAuth failures plus 20 new RAG/generation contracts). No production code changed.
+Source delivery, prompt preservation and save eligibility use synthetic outputs;
+no factual model accuracy or real similarity ranking is claimed. See
+[RAG generation investigation and contract mapping](RAG_GENERATION.md).
+
+Batch 6B-1 adds generation-result validation and a temporary 8192-byte complete-
+prompt eligibility policy for comprehensive notes. **391 tests: 366 pass, 25 fail**
+(the same 20 OAuth failures plus five deferred coverage/grounding/reference
+contracts). See [implemented result, metadata and budget contracts](RAG_GENERATION.md#implemented-batch-6b-1-result-validation-and-temporary-eligibility)
+for unknown-status compatibility, changed fixtures and real SDK/tokenizer limits.
+No hierarchy or comprehensive batching has been implemented.
+
+Batch 6B-2 replaces comprehensive long-source refusal with ordered manifests,
+budgeted generation and bounded hierarchical synthesis. **432 total: 410 passing,
+22 failures** (20 unchanged OAuth plus two deferred grounding/reference contracts).
+Forty-one new offline tests cover source accounting, budgets, failure/ancestry checks,
+provider cascade per batch, and the backward-compatible saved-notes record format.
+See [implemented comprehensive-generation contracts](RAG_GENERATION.md#implemented-batch-6b-2-ordered-comprehensive-generation).
+No mock result establishes factual accuracy; no real services were used.
+
+Batch 6B-3 adds source-only/uncertainty instructions, optional strictly scoped
+source identifiers, ancestry validation and V2/V1/plain-text saved-note compatibility
+at all actual consumers. **472 tests: 452 passing and only the unchanged 20 OAuth
+failures.** Forty new offline tests exercise reference and consumer boundaries;
+no mock response proves factual accuracy. See [grounding/reference contracts and consumer inventory](RAG_GENERATION.md#implemented-batch-6b-3-grounding-explicit-references-and-note-consumers).
+Default resource budgets remain unchanged. OAuth is still insecure; do not deploy.
